@@ -13,20 +13,20 @@ class CurrencyConverterService
 
     public function __construct(CurrencyConverter $currencyConverter, EntityManagerInterface $entityManager)
     {
-        $this->entityManager =$entityManager;
-        $this->currencyConverter =$currencyConverter;
+        $this->entityManager = $entityManager;
+        $this->currencyConverter = $currencyConverter;
     }
 
-    public function getConvertResult(string $currencyFrom, string $currencyTo,int $amount): array
+    public function getConvertResult(string $currencyFrom, string $currencyTo, int $amount): array
     {
         $model = $this->entityManager
             ->getRepository(CurrencyExchangeRate::class)
-            ->findOneBy(['CurrencyForConvert'=> $currencyFrom, 'ConvertedCurrency' => $currencyTo]);
+            ->findOneBy(['CurrencyForConvert' => $currencyFrom, 'ConvertedCurrency' => $currencyTo]);
 
         if(empty($model)) {
             $badResponse = ['error' => ['message' => \sprintf('Resource with currency %s or currency %s not found! You must write currency in form e.g. USD', $currencyFrom, $currencyTo )],
                 'links' => [ 'see all possible converting variants ' => '/api/all_currencies',
-                    'add new conversion' => '/api/add_conversion',
+                             'add new conversion' => '/api/add_conversion',
                 ]
             ];
             return $badResponse;
@@ -59,13 +59,15 @@ class CurrencyConverterService
         return $response;
     }
 
-    public function getAllPossibleCurrencies()
+    public function getAllPossibleCurrencies(): array
     {
-        $currencies = $this->entityManager->getRepository(CurrencyExchangeRate::class)->findAll();
+        $currencies = $this->entityManager
+            ->getRepository(CurrencyExchangeRate::class)
+            ->findAll();
 
         if (empty($currencies)) {
             $badResponse = $response = ['error' => ['message' => 'Have not existed any currencies yet'],
-                'links' => ['add new conversion' => '/api/add_conversion']
+                                        'links' => ['add new conversion' => '/api/add_conversion']
             ];
             return $badResponse;
         }
@@ -87,7 +89,7 @@ class CurrencyConverterService
         return $response;
     }
 
-    public function getExchangeRatesByGivenCurrency(string $currency)
+    public function getExchangeRatesByGivenCurrency(string $currency): array
     {
         $currencies = $this->entityManager
             ->getRepository(CurrencyExchangeRate::class)
@@ -95,17 +97,15 @@ class CurrencyConverterService
 
         if (empty($currency)) {
             $badResponse = ['error' => ['message' => \sprintf('Resource with currency %s not found! You must write currency in form e.g. USD', $currency)],
-                'links' => ['see all possible converting variants ' => '/api/all_currencies',
-                    'add new conversion' => '/api/add_conversion',
+                            'links' => ['see all possible converting variants ' => '/api/all_currencies',
+                                        'add new conversion' => '/api/add_conversion',
                 ]
             ];
             return $badResponse;
         }
 
         $response = [];
-
         foreach ($currencies as $currency) {
-
             $response[] = [
                 'result' => [
                     'currencyToConvert' => $currency->getCurrencyForConvert(),
@@ -120,9 +120,8 @@ class CurrencyConverterService
         return $response;
     }
 
-    public function addConversion(string $currencyFrom, string $currencyTo,float $exchangeRate)
+    public function addConversion(string $currencyFrom, string $currencyTo, float $exchangeRate): array
     {
-
         $model = $this->entityManager
             ->getRepository(CurrencyExchangeRate::class)
             ->findOneBy(['CurrencyForConvert'=> $currencyFrom, 'ConvertedCurrency' => $currencyTo]);
@@ -137,7 +136,6 @@ class CurrencyConverterService
 
             $this->entityManager->persist($conversion);
             $this->entityManager->flush();
-
 
             $response = [
                 'result' => [
@@ -166,7 +164,7 @@ class CurrencyConverterService
         return $badResponse;
     }
 
-    public function updateExchangeRate(string $currencyFrom, string $currencyTo, float $exchangeRate)
+    public function updateExchangeRate(string $currencyFrom, string $currencyTo, float $exchangeRate): array
     {
         $model = $this->entityManager
             ->getRepository(CurrencyExchangeRate::class)
@@ -175,7 +173,7 @@ class CurrencyConverterService
         if(empty($model)) {
             $badResponse = ['error' => ['message' => \sprintf('Resource with currency %s or currency %s not found! You must write currency in form e.g. USD', $currencyFrom, $currencyTo )],
                 'links' => [ 'see all possible converting variants ' => '/api/all_currencies',
-                    'add new conversion' => '/api/add_conversion',
+                             'add new conversion' => '/api/add_conversion',
                 ]
             ];
             return $badResponse;
@@ -201,7 +199,7 @@ class CurrencyConverterService
         return $response;
     }
 
-    public function deleteConversion(string $currencyFrom, string $currencyTo)
+    public function deleteConversion(string $currencyFrom, string $currencyTo): array
     {
 
         $model = $this->entityManager
@@ -223,7 +221,7 @@ class CurrencyConverterService
         return [];
     }
 
-    public function deleteAllConversionByCurrency(string $currencyFrom)
+    public function deleteAllConversionByCurrency(string $currencyFrom): array
     {
         $currencies = $this->entityManager
             ->getRepository(CurrencyExchangeRate::class)
@@ -232,7 +230,7 @@ class CurrencyConverterService
         if(empty($currencies)) {
             $badResponse = ['error' => ['message' => \sprintf('Resource with currency %s not found! You must write currency in form e.g. USD', $currencyFrom )],
                 'links' => [ 'see all possible converting variants ' => '/api/all_currencies',
-                    'add new conversion' => '/api/add_conversion',
+                             'add new conversion' => '/api/add_conversion',
                 ]
             ];
             return $badResponse;
@@ -244,6 +242,5 @@ class CurrencyConverterService
         }
 
         return [];
-
     }
 }
