@@ -234,9 +234,79 @@ class CurrencyConverterController extends FOSRestController
               'currencyToConvert' => $model->getCurrencyForConvert(),
               'convertedCurrency' => $model->getConvertedCurrency(),
               'exchangeRates' => $model->getExchangeRate(),
-          ]
+          ],
+          'links' => [
+              'convert currency' => \sprintf('api/converter/convertFrom=%s&convertTo=%s&amount=setAmount', $model->getCurrencyForConvert(), $model->getConvertedCurrency()),
+              'see all possible converting variants ' => '/api/all_currencies'
+              ]
         ];
 
         return $this->view($response, Response::HTTP_OK);
     }
+
+    /**
+     * Delete Conversion.
+     *
+     * @Rest\Delete("/delete/currencyFrom={currencyFrom}&currencyTo={currencyTo}")
+     *
+     * @param string $currencyFrom
+     * @param string $currencyTo
+     * @return \FOS\RestBundle\View\View
+     */
+    public function deleteConversion(string $currencyFrom, string $currencyTo)
+    {
+
+        $model = $this->getDoctrine()
+            ->getRepository(CurrencyExchangeRate::class)
+            ->findOneBy(['CurrencyForConvert'=> $currencyFrom, 'ConvertedCurrency' => $currencyTo]);
+
+        if(empty($model)) {
+            $response = ['error' => ['message' => \sprintf('Resource with currency %s or currency %s not found! You must write currency in form e.g. USD', $currencyFrom, $currencyTo )],
+                'links' => [ 'see all possible converting variants ' => '/api/all_currencies',
+                    'add new conversion' => '/api/add_conversion',
+                ]
+            ];
+            return $this->view($response, Response::HTTP_NOT_FOUND);
+        }
+
+        $em = $this->getDoctrine()->getManager();
+        $em->remove($model);
+        $em->flush();
+
+       return $this->view([],Response::HTTP_NO_CONTENT);
+    }
+
+    /**
+     * Delete all conversions of currency.
+     *
+     * @Rest\Delete("/delete_all/currencyFrom={currencyFrom}")
+     *
+     * @param string $currencyFrom
+     * @return \FOS\RestBundle\View\View
+     */
+    public function deleteAllConversionByCurrency(string $currencyFrom)
+    {
+        $currencies = $this->getDoctrine()
+            ->getRepository(CurrencyExchangeRate::class)
+            ->findBy(['CurrencyForConvert' => $currencyFrom ]);
+
+        if(empty($currencies)) {
+            $response = ['error' => ['message' => \sprintf('Resource with currency %s not found! You must write currency in form e.g. USD', $currencyFrom )],
+                'links' => [ 'see all possible converting variants ' => '/api/all_currencies',
+                    'add new conversion' => '/api/add_conversion',
+                ]
+            ];
+            return $this->view($response, Response::HTTP_NOT_FOUND);
+        }
+
+        $em = $this->getDoctrine()->getManager();
+        foreach ($currencies as $currency) {
+            $em->remove($currency);
+            $em->flush();
+        }
+
+        return $this->view([],Response::HTTP_NO_CONTENT);
+
+    }
+
 }
