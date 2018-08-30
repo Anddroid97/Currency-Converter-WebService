@@ -1,8 +1,6 @@
-
 parameters:
 
 services:
-
     _defaults:
         autowire: true
         autoconfigure: true
@@ -16,3 +14,12 @@ services:
         resource: '../src/Controller'
         tags: ['controller.service_arguments']
 
+    anddroid97.currency_converter:
+        class: Anddroid97\CurrencyConverter\CurrencyConverter
+
+    App\Services\CurrencyConverterService:
+        arguments:
+            - '@anddroid97.currency_converter'
+
+    #Aliases
+    Anddroid97\CurrencyConverter\CurrencyConverter: '@anddroid97.currency_converter'
