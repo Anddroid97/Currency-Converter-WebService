@@ -4,9 +4,9 @@ A simple Currency-Convertor Web-Service with REST API on Symfony Skeleton using 
 Usage
 --------------
 GET => For convert currency:
-http://127.0.0.1:8000/converter/convertFrom={currencyFrom}&convertTo={currencyTo}&amount={amount}
+http://127.0.0.1:8000/api/converter/convertFrom={currencyFrom}&convertTo={currencyTo}&amount={amount}
 
-http://127.0.0.1:8000/converter/convertFrom=USD&convertTo=UAH&amount=2
+http://127.0.0.1:8000/api/converter/convertFrom=USD&convertTo=UAH&amount=2
 ```php
 {
     "result": {
